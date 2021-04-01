@@ -13,6 +13,19 @@ else:
 
 data = sorted(data, key=lambda doc: doc['metadata']['name'] + doc['kind'])
 
-for datum in data:
+
+def sort_containers_envs(containers):
+    for container in containers:
+        if 'env' in container:
+            container['env'] = sorted(container['env'], key=lambda env_var: env_var['name'])
+
+
+for doc in data:
+    if doc['kind'] in ['Deployment', 'DeploymentConfig']:
+        pod_spec = doc['spec']['template']['spec']
+        if 'containers' in pod_spec:
+            sort_containers_envs(pod_spec['containers'])
+        if 'initContainers' in pod_spec:
+            sort_containers_envs(pod_spec['initContainers'])
     print('---')
-    print(yaml.dump(datum))
+    print(yaml.dump(doc))
